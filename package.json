@@ -1,0 +1,61 @@
+{
+  "name": "@captcha-la/react",
+  "version": "1.0.1",
+  "description": "Official Captchala CAPTCHA React component - Smart CAPTCHA protection for your React applications",
+  "main": "dist/captchala-react.cjs.js",
+  "module": "dist/captchala-react.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/captchala-react.esm.js",
+      "require": "./dist/captchala-react.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Captcha-La/react.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Captcha-La/react/issues"
+  },
+  "homepage": "https://docs.captcha.la/sdk/web/react",
+  "keywords": [
+    "captcha",
+    "captchala",
+    "react",
+    "component",
+    "hooks",
+    "bot-protection",
+    "security",
+    "verification"
+  ],
+  "author": "CaptchaLa <supply@captcha.la>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

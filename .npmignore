@@ -1,0 +1,21 @@
+# Source files
+src/
+
+# Config files
+tsconfig.json
+vite.config.ts
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Test
+__tests__/
+*.test.ts
+*.spec.ts
+coverage/
+
+# Misc
+.DS_Store
+*.log
