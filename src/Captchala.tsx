@@ -23,6 +23,8 @@ export interface CaptchalaProps {
    * If not provided the SDK never auto-retries — onError fires immediately.
    */
   onServerTokenExpired?: () => Promise<string | null> | string | null
+  /** Theme: preset string or { custom: { brightness: 'light' | 'dark' | 'system', ... } }. Omit to follow the system. */
+  theme?: any
   onSuccess?: (result: CaptchalaResult) => void
   onError?: (error: any) => void
   onClose?: () => void
@@ -53,9 +55,10 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
     appKey,
     product = 'popup',
     action = 'default',
-    lang = 'zh-CN',
+    lang,
     bindTo: bindToSelector,
     serverToken,
+    theme,
     onServerTokenExpired,
     onSuccess,
     onError,
@@ -95,6 +98,7 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
         product,
         action,
         lang,
+        theme,
         serverToken,
         // SDK 调用时委派到 props.onServerTokenExpired (通过 ref, 避免闭包陈旧)
         onServerTokenExpired: () =>

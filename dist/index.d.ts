@@ -26,6 +26,8 @@ export declare interface CaptchalaProps {
      * If not provided the SDK never auto-retries — onError fires immediately.
      */
     onServerTokenExpired?: () => Promise<string | null> | string | null;
+    /** Theme: preset string or { custom: { brightness: 'light' | 'dark' | 'system', ... } }. Omit to follow the system. */
+    theme?: any;
     onSuccess?: (result: CaptchalaResult) => void;
     onError?: (error: any) => void;
     onClose?: () => void;
@@ -73,6 +75,8 @@ export declare interface UseCaptchalaOptions {
     product?: 'popup' | 'float' | 'embed' | 'bind';
     action?: string;
     lang?: string;
+    /** Theme: preset string or { custom: { brightness: 'light' | 'dark' | 'system', ... } }. Omit to follow the system. */
+    theme?: any;
 }
 
 export declare interface UseCaptchalaReturn {

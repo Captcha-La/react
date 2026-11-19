@@ -6,6 +6,8 @@ export interface UseCaptchalaOptions {
   product?: 'popup' | 'float' | 'embed' | 'bind'
   action?: string
   lang?: string
+  /** Theme: preset string or { custom: { brightness: 'light' | 'dark' | 'system', ... } }. Omit to follow the system. */
+  theme?: any
 }
 
 export interface CaptchalaResult {
@@ -53,7 +55,8 @@ export function useCaptchala(options: UseCaptchalaOptions): UseCaptchalaReturn {
           appKey: options.appKey,
           product: options.product || 'popup',
           action: options.action || 'default',
-          lang: options.lang || 'zh-CN'
+          lang: options.lang,
+          theme: options.theme
         })
 
         instance
