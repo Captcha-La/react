@@ -29,6 +29,13 @@ export declare interface CaptchalaProps {
     /** Theme: preset string or { custom: { brightness: 'light' | 'dark' | 'system', ... } }. Omit to follow the system. */
     theme?: any;
     onSuccess?: (result: CaptchalaResult) => void;
+    /**
+     * Called once when the pass token of the last success expires before it was used.
+     * With this prop the widget stays as it is (no onError): show your own message and
+     * call `ref.reset()` then `ref.verify()` for a new verification. Without it the SDK
+     * behaves as before (the bar shows "Verification expired"; onError fires once).
+     */
+    onExpired?: () => void;
     onError?: (error: any) => void;
     onClose?: () => void;
     onReady?: () => void;
@@ -77,6 +84,13 @@ export declare interface UseCaptchalaOptions {
     lang?: string;
     /** Theme: preset string or { custom: { brightness: 'light' | 'dark' | 'system', ... } }. Omit to follow the system. */
     theme?: any;
+    /**
+     * Called once when the pass token of the last success expires before it was used.
+     * With it the widget stays as it is (no rejection); call `reset()` then `verify()`
+     * for a new verification.
+     * Without it the SDK behaves as before.
+     */
+    onExpired?: () => void;
 }
 
 export declare interface UseCaptchalaReturn {

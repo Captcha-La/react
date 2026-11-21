@@ -89,6 +89,7 @@ function LoginForm() {
 | `action` | `string` | `'default'` | 业务场景标识 (例如 'login'、'register'、'checkout') |
 | `lang` | `string` | `'zh-CN'` | 语言代码 (`'zh-CN'`、`'en'`、`'ja'` 等) |
 | `onSuccess` | `(result) => void` | - | 验证成功回调 |
+| `onExpired` | `() => void` | - | pass token 在使用前过期（只触发一次），见 [Token 过期](#token-过期) |
 | `onError` | `(error) => void` | - | 验证失败回调 |
 | `onClose` | `() => void` | - | 关闭回调 |
 | `onReady` | `() => void` | - | 就绪回调 |
@@ -137,6 +138,35 @@ const {
   appendTo    // (selector) => void - 追加到元素
 } = useCaptchala(options)
 ```
+
+## Token 过期
+
+`onSuccess` 拿到的 pass token 有有效期。用户拖太久才提交时，`onExpired` 会触发一次。
+传了 `onExpired` 时组件界面保持不变，也不会触发 `onError`，由你决定怎么处理，例如提示用户，
+再依次调用 `reset()`、`verify()` 重新验证（与其他验证码组件的 `expired-callback` + `reset()` + `execute()` 用法一致）：
+
+```tsx
+const captchaRef = useRef<CaptchalaRef>(null)
+const [token, setToken] = useState('')
+const [expired, setExpired] = useState(false)
+
+const verifyAgain = () => {
+  setExpired(false)
+  captchaRef.current?.reset()
+  captchaRef.current?.verify()
+}
+
+<Captchala
+  ref={captchaRef}
+  appKey="your-app-key"
+  onSuccess={(r) => { setToken(r.token); setExpired(false) }}
+  onExpired={() => { setToken(''); setExpired(true) }}
+/>
+{expired && <p>验证已过期。<button onClick={verifyAgain}>重新验证</button></p>}
+```
+
+不传 `onExpired` 时行为与以前相同：触发条显示「验证已过期」和刷新按钮，并触发一次 `onError`（class 为 `expired`）。
+离线或降级 token 不会触发 `onExpired`。`useCaptchala({ onExpired })` 用法相同。
 
 ## 显示模式
 

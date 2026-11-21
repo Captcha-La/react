@@ -1,118 +1,122 @@
-import { jsx as z } from "react/jsx-runtime";
-import { forwardRef as H, useRef as T, useCallback as b, useEffect as K, useImperativeHandle as O, useState as N } from "react";
-const $ = [
+import { jsx as H } from "react/jsx-runtime";
+import { forwardRef as q, useRef as x, useCallback as k, useEffect as N, useImperativeHandle as A, useState as P } from "react";
+const D = [
   "cdn.captcha-cdn.net",
   "cdn.captchala.com"
-], D = 1e4, l = {
+], V = 1e4, i = {
   loading: !1,
   loaded: !1,
   error: null,
   promise: null
 };
-function P(n, p, f = 0) {
+function $(r, h, p = 0) {
   return new Promise((t, y) => {
-    if (f >= n.length) {
+    if (p >= r.length) {
       y(new Error("All CDN servers failed"));
       return;
     }
-    const w = `https://${n[f]}${p}`, i = document.createElement("script");
-    i.src = w, i.async = !0, i.crossOrigin = "anonymous";
-    let o = !1, h;
-    const u = (C = !1) => {
-      o = !0, clearTimeout(h), i.onload = null, i.onerror = null, C && i.parentNode && i.parentNode.removeChild(i);
+    const w = `https://${r[p]}${h}`, l = document.createElement("script");
+    l.src = w, l.async = !0, l.crossOrigin = "anonymous";
+    let a = !1, m;
+    const f = (C = !1) => {
+      a = !0, clearTimeout(m), l.onload = null, l.onerror = null, C && l.parentNode && l.parentNode.removeChild(l);
     };
-    i.onload = () => {
-      o || (u(!1), t());
-    }, i.onerror = () => {
-      o || (u(!0), P(n, p, f + 1).then(t).catch(y));
-    }, h = setTimeout(() => {
-      o || (u(!0), P(n, p, f + 1).then(t).catch(y));
-    }, D), document.body.appendChild(i);
+    l.onload = () => {
+      a || (f(!1), t());
+    }, l.onerror = () => {
+      a || (f(!0), $(r, h, p + 1).then(t).catch(y));
+    }, m = setTimeout(() => {
+      a || (f(!0), $(r, h, p + 1).then(t).catch(y));
+    }, V), document.body.appendChild(l);
   });
 }
-function q(n, p) {
-  const f = `https://${n[0]}${p}`;
-  if (document.querySelector(`link[href="${f}"]`)) return;
+function _(r, h) {
+  const p = `https://${r[0]}${h}`;
+  if (document.querySelector(`link[href="${p}"]`)) return;
   const t = document.createElement("link");
-  t.rel = "stylesheet", t.href = f, t.crossOrigin = "anonymous", document.head.appendChild(t);
+  t.rel = "stylesheet", t.href = p, t.crossOrigin = "anonymous", document.head.appendChild(t);
 }
-function V() {
-  return l.loaded || window.Captchala ? (l.loaded = !0, Promise.resolve()) : (l.loading && l.promise || (l.loading = !0, l.promise = new Promise((n, p) => {
-    if (q($, "/captchala.css"), document.querySelector('script[src*="captchala.js"]')) {
+function z() {
+  return i.loaded || window.Captchala ? (i.loaded = !0, Promise.resolve()) : (i.loading && i.promise || (i.loading = !0, i.promise = new Promise((r, h) => {
+    if (_(D, "/captchala.css"), document.querySelector('script[src*="captchala.js"]')) {
       let t = 0;
-      const y = D / 50, w = setInterval(() => {
-        t++, window.Captchala ? (clearInterval(w), l.loaded = !0, l.loading = !1, n()) : t >= y && (clearInterval(w), l.loading = !1, l.error = new Error("SDK load timeout - script exists but SDK not initialized"), p(l.error));
+      const y = V / 50, w = setInterval(() => {
+        t++, window.Captchala ? (clearInterval(w), i.loaded = !0, i.loading = !1, r()) : t >= y && (clearInterval(w), i.loading = !1, i.error = new Error("SDK load timeout - script exists but SDK not initialized"), h(i.error));
       }, 50);
       return;
     }
-    P($, "/captchala.js").then(() => {
-      l.loaded = !0, l.loading = !1, n();
+    $(D, "/captchala.js").then(() => {
+      i.loaded = !0, i.loading = !1, r();
     }).catch((t) => {
-      l.loading = !1, l.error = t, p(t);
+      i.loading = !1, i.error = t, h(t);
     });
-  })), l.promise);
+  })), i.promise);
 }
-function M() {
-  return l.loaded || !!window.Captchala;
+function W() {
+  return i.loaded || !!window.Captchala;
 }
-const A = H((n, p) => {
+const F = q((r, h) => {
   const {
-    appKey: f,
+    appKey: p,
     product: t = "popup",
     action: y = "default",
     lang: w,
-    bindTo: i,
-    serverToken: o,
-    theme: h,
-    onServerTokenExpired: u,
+    bindTo: l,
+    serverToken: a,
+    theme: m,
+    onServerTokenExpired: f,
     onSuccess: C,
-    onError: k,
-    onClose: v,
-    onReady: I,
-    className: x,
-    style: L
-  } = n, r = T(null), e = T(null), a = T({ onSuccess: C, onError: k, onClose: v, onReady: I, onServerTokenExpired: u });
-  a.current = { onSuccess: C, onError: k, onClose: v, onReady: I, onServerTokenExpired: u };
-  const s = b(async () => {
-    var c, E;
+    onExpired: T,
+    onError: R,
+    onClose: I,
+    onReady: L,
+    className: O,
+    style: K
+  } = r, b = x(null), e = x(null), n = x({ onSuccess: C, onExpired: T, onError: R, onClose: I, onReady: L, onServerTokenExpired: f });
+  n.current = { onSuccess: C, onExpired: T, onError: R, onClose: I, onReady: L, onServerTokenExpired: f };
+  const o = !!T, u = k(async () => {
+    var c, S;
     try {
-      if (await V(), !window.Captchala || !r.current) return;
-      for (e.current && (e.current.destroy(), e.current = null); r.current.firstChild; )
-        r.current.removeChild(r.current.firstChild);
-      const S = window.Captchala.init({
-        appKey: f,
+      if (await z(), !window.Captchala || !b.current) return;
+      for (e.current && (e.current.destroy(), e.current = null); b.current.firstChild; )
+        b.current.removeChild(b.current.firstChild);
+      const E = window.Captchala.init({
+        appKey: p,
         product: t,
         action: y,
         lang: w,
-        theme: h,
-        serverToken: o,
+        theme: m,
+        serverToken: a,
         // SDK 调用时委派到 props.onServerTokenExpired (通过 ref, 避免闭包陈旧)
         onServerTokenExpired: () => {
-          var m, d;
-          return ((d = (m = a.current).onServerTokenExpired) == null ? void 0 : d.call(m)) ?? null;
+          var d, s;
+          return ((s = (d = n.current).onServerTokenExpired) == null ? void 0 : s.call(d)) ?? null;
         }
       });
-      S.onReady(() => {
-        var m, d;
-        return (d = (m = a.current).onReady) == null ? void 0 : d.call(m);
-      }).onSuccess((m) => {
-        var d, R;
-        return (R = (d = a.current).onSuccess) == null ? void 0 : R.call(d, m);
-      }).onError((m) => {
-        var d, R;
-        return (R = (d = a.current).onError) == null ? void 0 : R.call(d, m);
+      E.onReady(() => {
+        var d, s;
+        return (s = (d = n.current).onReady) == null ? void 0 : s.call(d);
+      }).onSuccess((d) => {
+        var s, v;
+        return (v = (s = n.current).onSuccess) == null ? void 0 : v.call(s, d);
+      }).onError((d) => {
+        var s, v;
+        return (v = (s = n.current).onError) == null ? void 0 : v.call(s, d);
       }).onClose(() => {
-        var m, d;
-        return (d = (m = a.current).onClose) == null ? void 0 : d.call(m);
-      }), t === "bind" && i ? S.bindTo(i) : t !== "bind" && S.appendTo(r.current), e.current = S;
-    } catch (S) {
-      (E = (c = a.current).onError) == null || E.call(c, S);
+        var d, s;
+        return (s = (d = n.current).onClose) == null ? void 0 : s.call(d);
+      }), o && typeof E.onExpired == "function" && E.onExpired(() => {
+        var d, s;
+        return (s = (d = n.current).onExpired) == null ? void 0 : s.call(d);
+      }), t === "bind" && l ? E.bindTo(l) : t !== "bind" && E.appendTo(b.current), e.current = E;
+    } catch (E) {
+      (S = (c = n.current).onError) == null || S.call(c, E);
     }
-  }, [f, t, y, i, o]);
-  K(() => {
+  }, [p, t, y, l, a, o]);
+  N(() => {
     var c;
     (c = e.current) != null && c.setLang && e.current.setLang(w);
-  }, [w]), O(p, () => ({
+  }, [w]), A(h, () => ({
     verify: () => {
       var c;
       return (c = e.current) == null ? void 0 : c.verify();
@@ -126,107 +130,112 @@ const A = H((n, p) => {
       return (c = e.current) == null ? void 0 : c.destroy();
     },
     bindTo: (c) => {
-      var E;
-      return (E = e.current) == null ? void 0 : E.bindTo(c);
+      var S;
+      return (S = e.current) == null ? void 0 : S.bindTo(c);
     },
     setLang: (c) => {
-      var E, S;
-      return (S = (E = e.current) == null ? void 0 : E.setLang) == null ? void 0 : S.call(E, c);
+      var S, E;
+      return (E = (S = e.current) == null ? void 0 : S.setLang) == null ? void 0 : E.call(S, c);
     },
     getInstance: () => e.current
-  }), []), K(() => (s(), () => {
+  }), []), N(() => (u(), () => {
     e.current && (e.current.destroy(), e.current = null);
-  }), [s]);
-  const g = t === "bind" ? { minHeight: 0, position: "absolute", width: 0, height: 0, overflow: "hidden", ...L } : { minHeight: 50, ...L };
-  return /* @__PURE__ */ z(
+  }), [u]);
+  const g = t === "bind" ? { minHeight: 0, position: "absolute", width: 0, height: 0, overflow: "hidden", ...K } : { minHeight: 50, ...K };
+  return /* @__PURE__ */ H(
     "div",
     {
-      ref: r,
-      className: x,
+      ref: b,
+      className: O,
       style: g
     }
   );
 });
-A.displayName = "Captchala";
-function U(n) {
-  const [p, f] = N(!1), [t, y] = N(!0), [w, i] = N(null), o = T(null), h = T(null), u = T(null), C = T(!1);
-  K(() => {
-    let r = !0;
-    async function e() {
+F.displayName = "Captchala";
+function B(r) {
+  const [h, p] = P(!1), [t, y] = P(!0), [w, l] = P(null), a = x(null), m = x(null), f = x(null), C = x(!1), T = x(r.onExpired);
+  T.current = r.onExpired;
+  const R = !!r.onExpired;
+  N(() => {
+    let e = !0;
+    async function n() {
       try {
-        if (await V(), !r || !window.Captchala) return;
-        const a = window.Captchala.init({
-          appKey: n.appKey,
-          product: n.product || "popup",
-          action: n.action || "default",
-          lang: n.lang,
-          theme: n.theme
+        if (await z(), !e || !window.Captchala) return;
+        const o = window.Captchala.init({
+          appKey: r.appKey,
+          product: r.product || "popup",
+          action: r.action || "default",
+          lang: r.lang,
+          theme: r.theme
         });
-        a.onReady(() => {
-          r && (f(!0), y(!1));
-        }).onSuccess((s) => {
+        o.onReady(() => {
+          e && (p(!0), y(!1));
+        }).onSuccess((u) => {
           var g;
-          C.current = !1, (g = h.current) == null || g.call(h, s), h.current = null, u.current = null;
-        }).onError((s) => {
+          C.current = !1, (g = m.current) == null || g.call(m, u), m.current = null, f.current = null;
+        }).onError((u) => {
           var c;
           C.current = !1;
           let g;
-          s instanceof Error ? g = s : typeof s == "string" ? g = new Error(s) : s && typeof s == "object" ? (g = new Error(s.message || s.error || "Verification failed"), g.cause = s) : g = new Error("Verification failed"), (c = u.current) == null || c.call(u, g), h.current = null, u.current = null;
-        }), o.current = a;
-      } catch (a) {
-        r && (i(a), y(!1));
+          u instanceof Error ? g = u : typeof u == "string" ? g = new Error(u) : u && typeof u == "object" ? (g = new Error(u.message || u.error || "Verification failed"), g.cause = u) : g = new Error("Verification failed"), (c = f.current) == null || c.call(f, g), m.current = null, f.current = null;
+        }), R && typeof o.onExpired == "function" && o.onExpired(() => {
+          var u;
+          return (u = T.current) == null ? void 0 : u.call(T);
+        }), a.current = o;
+      } catch (o) {
+        e && (l(o), y(!1));
       }
     }
-    return e(), () => {
-      r = !1, o.current && (o.current.destroy(), o.current = null);
+    return n(), () => {
+      e = !1, a.current && (a.current.destroy(), a.current = null);
     };
-  }, [n.appKey, n.product, n.action]), K(() => {
-    var r;
-    n.lang && ((r = o.current) != null && r.setLang) && o.current.setLang(n.lang);
-  }, [n.lang]);
-  const k = b(() => new Promise((r, e) => {
-    if (!o.current) {
-      e(new Error("Captcha not initialized"));
+  }, [r.appKey, r.product, r.action, R]), N(() => {
+    var e;
+    r.lang && ((e = a.current) != null && e.setLang) && a.current.setLang(r.lang);
+  }, [r.lang]);
+  const I = k(() => new Promise((e, n) => {
+    if (!a.current) {
+      n(new Error("Captcha not initialized"));
       return;
     }
     if (C.current) {
-      e(new Error("Verification already in progress"));
+      n(new Error("Verification already in progress"));
       return;
     }
-    C.current = !0, h.current = r, u.current = e;
+    C.current = !0, m.current = e, f.current = n;
     try {
-      o.current.verify();
-    } catch (a) {
-      C.current = !1, h.current = null, u.current = null, e(a instanceof Error ? a : new Error(String((a == null ? void 0 : a.message) || a || "verify() failed")));
+      a.current.verify();
+    } catch (o) {
+      C.current = !1, m.current = null, f.current = null, n(o instanceof Error ? o : new Error(String((o == null ? void 0 : o.message) || o || "verify() failed")));
     }
-  }), []), v = b(() => {
-    var r;
-    (r = o.current) == null || r.reset();
-  }, []), I = b((r) => {
+  }), []), L = k(() => {
     var e;
-    (e = o.current) == null || e.bindTo(r);
-  }, []), x = b((r) => {
-    var e;
-    (e = o.current) == null || e.appendTo(r);
-  }, []), L = b((r) => {
-    var e, a;
-    (a = (e = o.current) == null ? void 0 : e.setLang) == null || a.call(e, r);
+    (e = a.current) == null || e.reset();
+  }, []), O = k((e) => {
+    var n;
+    (n = a.current) == null || n.bindTo(e);
+  }, []), K = k((e) => {
+    var n;
+    (n = a.current) == null || n.appendTo(e);
+  }, []), b = k((e) => {
+    var n, o;
+    (o = (n = a.current) == null ? void 0 : n.setLang) == null || o.call(n, e);
   }, []);
   return {
-    ready: p,
+    ready: h,
     loading: t,
     error: w,
-    verify: k,
-    reset: v,
-    bindTo: I,
-    appendTo: x,
-    setLang: L
+    verify: I,
+    reset: L,
+    bindTo: O,
+    appendTo: K,
+    setLang: b
   };
 }
 export {
-  A as Captchala,
-  A as default,
-  M as isCaptchalaLoaded,
-  V as loadCaptchalaSDK,
-  U as useCaptchala
+  F as Captchala,
+  F as default,
+  W as isCaptchalaLoaded,
+  z as loadCaptchalaSDK,
+  B as useCaptchala
 };

@@ -26,6 +26,13 @@ export interface CaptchalaProps {
   /** Theme: preset string or { custom: { brightness: 'light' | 'dark' | 'system', ... } }. Omit to follow the system. */
   theme?: any
   onSuccess?: (result: CaptchalaResult) => void
+  /**
+   * Called once when the pass token of the last success expires before it was used.
+   * With this prop the widget stays as it is (no onError): show your own message and
+   * call `ref.reset()` then `ref.verify()` for a new verification. Without it the SDK
+   * behaves as before (the bar shows "Verification expired"; onError fires once).
+   */
+  onExpired?: () => void
   onError?: (error: any) => void
   onClose?: () => void
   onReady?: () => void
@@ -61,6 +68,7 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
     theme,
     onServerTokenExpired,
     onSuccess,
+    onExpired,
     onError,
     onClose,
     onReady,
@@ -72,8 +80,10 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
   const captchaInstanceRef = useRef<any>(null)
 
   // Store callbacks in refs to avoid dependency changes causing re-init
-  const callbacksRef = useRef({ onSuccess, onError, onClose, onReady, onServerTokenExpired })
-  callbacksRef.current = { onSuccess, onError, onClose, onReady, onServerTokenExpired }
+  const callbacksRef = useRef({ onSuccess, onExpired, onError, onClose, onReady, onServerTokenExpired })
+  callbacksRef.current = { onSuccess, onExpired, onError, onClose, onReady, onServerTokenExpired }
+  // Registered with the SDK only when given: without a handler the SDK behaves as before.
+  const hasOnExpired = !!onExpired
 
   // Initialize captcha
   const initCaptcha = useCallback(async () => {
@@ -111,6 +121,9 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
         .onSuccess((result: CaptchalaResult) => callbacksRef.current.onSuccess?.(result))
         .onError((err: Error) => callbacksRef.current.onError?.(err))
         .onClose(() => callbacksRef.current.onClose?.())
+      if (hasOnExpired && typeof instance.onExpired === 'function') {
+        instance.onExpired(() => callbacksRef.current.onExpired?.())
+      }
 
       if (product === 'bind' && bindToSelector) {
         // bind mode: bindTo must be called synchronously after init
@@ -123,7 +136,7 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
     } catch (err) {
       callbacksRef.current.onError?.(err)
     }
-  }, [appKey, product, action, bindToSelector, serverToken])
+  }, [appKey, product, action, bindToSelector, serverToken, hasOnExpired])
   // 注意: lang 故意不在 deps 里. lang 改动走下面的 setLang 原地切, 不拆实例 (避免吞掉
   // 打开的 voice overlay 或者 popup). initCaptcha 内部读取 lang 是首次挂载用.
 

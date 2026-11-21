@@ -8,6 +8,13 @@ export interface UseCaptchalaOptions {
   lang?: string
   /** Theme: preset string or { custom: { brightness: 'light' | 'dark' | 'system', ... } }. Omit to follow the system. */
   theme?: any
+  /**
+   * Called once when the pass token of the last success expires before it was used.
+   * With it the widget stays as it is (no rejection); call `reset()` then `verify()`
+   * for a new verification.
+   * Without it the SDK behaves as before.
+   */
+  onExpired?: () => void
 }
 
 export interface CaptchalaResult {
@@ -40,6 +47,9 @@ export function useCaptchala(options: UseCaptchalaOptions): UseCaptchalaReturn {
   const resolveRef = useRef<((result: CaptchalaResult) => void) | null>(null)
   const rejectRef = useRef<((error: Error) => void) | null>(null)
   const pendingRef = useRef<boolean>(false)  // Track if verify is pending
+  const onExpiredRef = useRef(options.onExpired)
+  onExpiredRef.current = options.onExpired
+  const hasOnExpired = !!options.onExpired
 
   // Initialize
   useEffect(() => {
@@ -92,6 +102,10 @@ export function useCaptchala(options: UseCaptchalaOptions): UseCaptchalaReturn {
             rejectRef.current = null
           })
 
+        if (hasOnExpired && typeof instance.onExpired === 'function') {
+          instance.onExpired(() => onExpiredRef.current?.())
+        }
+
         instanceRef.current = instance
       } catch (err) {
         if (mounted) {
@@ -110,7 +124,7 @@ export function useCaptchala(options: UseCaptchalaOptions): UseCaptchalaReturn {
         instanceRef.current = null
       }
     }
-  }, [options.appKey, options.product, options.action])
+  }, [options.appKey, options.product, options.action, hasOnExpired])
   // 注意: lang 不触发重挂 —— 见下方独立 effect 用 setLang 原地切
 
   // lang 改动: 原地切, 保留 voice overlay / popup 状态, 同时触发 overlay 的重拉+自动播放

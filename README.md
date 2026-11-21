@@ -89,6 +89,7 @@ function LoginForm() {
 | `action` | `string` | `'default'` | Action identifier (e.g., 'login', 'register', 'checkout') |
 | `lang` | `string` | `'zh-CN'` | Language code (`'zh-CN'`, `'en'`, `'ja'`, etc.) |
 | `onSuccess` | `(result) => void` | - | Success callback |
+| `onExpired` | `() => void` | - | The pass token expired before it was used (fires once). See [Token expiry](#token-expiry) |
 | `onError` | `(error) => void` | - | Error callback |
 | `onClose` | `() => void` | - | Close callback |
 | `onReady` | `() => void` | - | Ready callback |
@@ -137,6 +138,39 @@ const {
   appendTo    // (selector) => void - Append to element
 } = useCaptchala(options)
 ```
+
+## Token expiry
+
+The pass token from `onSuccess` is valid for a limited time. If the user waits too
+long before submitting, `onExpired` fires once. With `onExpired` the widget stays
+as it is and `onError` does not fire: you decide what happens, for example show a
+message and call `reset()` then `verify()` to start a new verification (the same
+pattern as an `expired-callback` + `reset()` + `execute()` in other CAPTCHA widgets):
+
+```tsx
+const captchaRef = useRef<CaptchalaRef>(null)
+const [token, setToken] = useState('')
+const [expired, setExpired] = useState(false)
+
+const verifyAgain = () => {
+  setExpired(false)
+  captchaRef.current?.reset()
+  captchaRef.current?.verify()
+}
+
+<Captchala
+  ref={captchaRef}
+  appKey="your-app-key"
+  onSuccess={(r) => { setToken(r.token); setExpired(false) }}
+  onExpired={() => { setToken(''); setExpired(true) }}
+/>
+{expired && <p>Token expired. <button onClick={verifyAgain}>Verify again</button></p>}
+```
+
+Without `onExpired`, nothing changes from before: the bar shows "Verification
+expired" with a refresh button and `onError` fires once (class `expired`).
+`onExpired` never fires for offline or degraded tokens. `useCaptchala({ onExpired })`
+works the same way.
 
 ## Display Modes
 
