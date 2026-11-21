@@ -3,9 +3,9 @@
 ## 1.1.0
 
 - `onExpired` prop on `<Captchala>` and `useCaptchala({ onExpired })`: called once when the pass
-  token of the last success expires before it was used. With it the widget stays as it is and
-  onError does not fire; call `reset()` then `verify()` for a new verification. Without it,
-  behaviour is unchanged (the bar shows "Verification expired" and onError fires once).
+  token of the last success expires before it was used, instead of onError. Either way the
+  widget shows that the verification expired; call `reset()` then `verify()` for a new
+  verification, or show your own prompt. Without it, onError fires once, as before.
 - Needs the current CDN SDK; with an older one the handler is never called.
 
 ## 1.0.2

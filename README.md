@@ -87,9 +87,9 @@ function LoginForm() {
 | `serverToken` | `string` | - | One-time, server-issued challenge token. Required when the app has `server_token_required=true`. See [Production: serverToken mode](#production-using-servertoken) below. |
 | `product` | `'popup' \| 'float' \| 'embed' \| 'bind'` | `'popup'` | Display mode |
 | `action` | `string` | `'default'` | Action identifier (e.g., 'login', 'register', 'checkout') |
-| `lang` | `string` | `'zh-CN'` | Language code (`'zh-CN'`, `'en'`, `'ja'`, etc.) |
+| `lang` | `string` | browser language | Language code (`'zh-CN'`, `'en'`, `'ja'`, etc.); unset = the browser language |
 | `onSuccess` | `(result) => void` | - | Success callback |
-| `onExpired` | `() => void` | - | The pass token expired before it was used (fires once). See [Token expiry](#token-expiry) |
+| `onExpired` | `() => void` | - | The pass token expired before it was used (fires once, instead of `onError`; the widget shows the expiry). See [Token expiry](#token-expiry) |
 | `onError` | `(error) => void` | - | Error callback |
 | `onClose` | `() => void` | - | Close callback |
 | `onReady` | `() => void` | - | Ready callback |
@@ -142,10 +142,12 @@ const {
 ## Token expiry
 
 The pass token from `onSuccess` is valid for a limited time. If the user waits too
-long before submitting, `onExpired` fires once. With `onExpired` the widget stays
-as it is and `onError` does not fire: you decide what happens, for example show a
-message and call `reset()` then `verify()` to start a new verification (the same
-pattern as an `expired-callback` + `reset()` + `execute()` in other CAPTCHA widgets):
+long before submitting, the widget shows that the verification expired (the bar
+or checkbox asks to verify again; in `bind` mode nothing is shown, since the
+button is yours) and `onExpired` fires once, instead of `onError`. You decide what
+else happens, for example show your own message and call `reset()` then `verify()`
+to start a new verification (the same pattern as an `expired-callback` +
+`reset()` + `execute()` in other CAPTCHA widgets):
 
 ```tsx
 const captchaRef = useRef<CaptchalaRef>(null)
@@ -167,8 +169,7 @@ const verifyAgain = () => {
 {expired && <p>Token expired. <button onClick={verifyAgain}>Verify again</button></p>}
 ```
 
-Without `onExpired`, nothing changes from before: the bar shows "Verification
-expired" with a refresh button and `onError` fires once (class `expired`).
+Without `onExpired`, `onError` fires once (class `expired`), as before.
 `onExpired` never fires for offline or degraded tokens. `useCaptchala({ onExpired })`
 works the same way.
 

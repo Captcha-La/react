@@ -30,10 +30,10 @@ export declare interface CaptchalaProps {
     theme?: any;
     onSuccess?: (result: CaptchalaResult) => void;
     /**
-     * Called once when the pass token of the last success expires before it was used.
-     * With this prop the widget stays as it is (no onError): show your own message and
-     * call `ref.reset()` then `ref.verify()` for a new verification. Without it the SDK
-     * behaves as before (the bar shows "Verification expired"; onError fires once).
+     * Called once when the pass token of the last success expires before it was used,
+     * instead of onError. The widget shows the expiry either way; show your own message
+     * or call `ref.reset()` then `ref.verify()` for a new verification. Without it
+     * onError fires once, as before.
      */
     onExpired?: () => void;
     onError?: (error: any) => void;
@@ -86,8 +86,8 @@ export declare interface UseCaptchalaOptions {
     theme?: any;
     /**
      * Called once when the pass token of the last success expires before it was used.
-     * With it the widget stays as it is (no rejection); call `reset()` then `verify()`
-     * for a new verification.
+     * The widget shows the expiry either way; call `reset()` then `verify()` for a new
+     * verification.
      * Without it the SDK behaves as before.
      */
     onExpired?: () => void;

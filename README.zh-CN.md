@@ -87,9 +87,9 @@ function LoginForm() {
 | `serverToken` | `string` | - | 服务端签发的一次性 challenge token。当应用配置 `server_token_required=true` 时必填，详见下方 [生产环境：使用 serverToken](#生产环境使用-servertoken)。 |
 | `product` | `'popup' \| 'float' \| 'embed' \| 'bind'` | `'popup'` | 显示模式 |
 | `action` | `string` | `'default'` | 业务场景标识 (例如 'login'、'register'、'checkout') |
-| `lang` | `string` | `'zh-CN'` | 语言代码 (`'zh-CN'`、`'en'`、`'ja'` 等) |
+| `lang` | `string` | 浏览器语言 | 语言代码 (`'zh-CN'`、`'en'`、`'ja'` 等)；不设置时跟随浏览器语言 |
 | `onSuccess` | `(result) => void` | - | 验证成功回调 |
-| `onExpired` | `() => void` | - | pass token 在使用前过期（只触发一次），见 [Token 过期](#token-过期) |
+| `onExpired` | `() => void` | - | pass token 在使用前过期（只触发一次，代替 `onError`；组件会显示验证已过期），见 [Token 过期](#token-过期) |
 | `onError` | `(error) => void` | - | 验证失败回调 |
 | `onClose` | `() => void` | - | 关闭回调 |
 | `onReady` | `() => void` | - | 就绪回调 |
@@ -141,8 +141,8 @@ const {
 
 ## Token 过期
 
-`onSuccess` 拿到的 pass token 有有效期。用户拖太久才提交时，`onExpired` 会触发一次。
-传了 `onExpired` 时组件界面保持不变，也不会触发 `onError`，由你决定怎么处理，例如提示用户，
+`onSuccess` 拿到的 pass token 有有效期。用户拖太久才提交时，组件会显示验证已过期（触发条或复选框提示重新验证；
+`bind` 模式不显示任何内容，因为按钮是你自己的），并触发一次 `onExpired`，代替 `onError`。其余由你决定，例如显示你自己的提示，
 再依次调用 `reset()`、`verify()` 重新验证（与其他验证码组件的 `expired-callback` + `reset()` + `execute()` 用法一致）：
 
 ```tsx
@@ -165,7 +165,7 @@ const verifyAgain = () => {
 {expired && <p>验证已过期。<button onClick={verifyAgain}>重新验证</button></p>}
 ```
 
-不传 `onExpired` 时行为与以前相同：触发条显示「验证已过期」和刷新按钮，并触发一次 `onError`（class 为 `expired`）。
+不传 `onExpired` 时与以前相同，触发一次 `onError`（class 为 `expired`）。
 离线或降级 token 不会触发 `onExpired`。`useCaptchala({ onExpired })` 用法相同。
 
 ## 显示模式

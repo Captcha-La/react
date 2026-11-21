@@ -10,8 +10,8 @@ export interface UseCaptchalaOptions {
   theme?: any
   /**
    * Called once when the pass token of the last success expires before it was used.
-   * With it the widget stays as it is (no rejection); call `reset()` then `verify()`
-   * for a new verification.
+   * The widget shows the expiry either way; call `reset()` then `verify()` for a new
+   * verification.
    * Without it the SDK behaves as before.
    */
   onExpired?: () => void
