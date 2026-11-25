@@ -256,7 +256,7 @@ Example backend endpoint (Express / Node.js):
 ```js
 // server.js — call this from your own /api/captcha-token handler
 app.get('/api/captcha-token', async (req, res) => {
-  const r = await fetch('https://apiv1.captcha.la/v1/server/challenge/issue', {
+  const r = await fetch('https://verify.captcha.la/v1/server/challenge/issue', {
     method: 'POST',
     headers: {
       'X-App-Key': process.env.CAPTCHALA_APP_KEY,
@@ -281,18 +281,19 @@ After receiving the token from `onSuccess`, validate it on your server:
 
 ```js
 // Your backend
-const response = await fetch('https://api.captcha.la/v1/risk/consume', {
+const response = await fetch('https://verify.captcha.la/v1/validate', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'X-App-Key': 'your-app-key',
-    'X-App-Secret': 'your-app-secret'
+    'X-App-Key': process.env.CAPTCHALA_APP_KEY,
+    'X-App-Secret': process.env.CAPTCHALA_APP_SECRET
   },
-  body: JSON.stringify({ token })
+  // pass_token = result.token from onSuccess; client_ip is optional but recommended
+  body: JSON.stringify({ pass_token: token, client_ip: req.ip })
 })
 
 const result = await response.json()
-if (result.code === 0 && result.data.valid) {
+if (result.code === 0 && result.data.valid === true) {
   // Token is valid, proceed with the request
 }
 ```
@@ -319,5 +320,5 @@ MIT License - see [LICENSE](./LICENSE) for details.
 ## Links
 
 - [Website](https://captcha.la)
-- [Documentation](https://docs.captcha.la/sdk/web/react)
+- [Documentation](https://docs.captcha.la/sdk/react)
 - [Dashboard](https://dash.captcha.la)

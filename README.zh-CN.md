@@ -250,7 +250,7 @@ function LoginPage() {
 ```js
 // server.js — 在你自己的 /api/captcha-token handler 里调用
 app.get('/api/captcha-token', async (req, res) => {
-  const r = await fetch('https://apiv1.captcha.la/v1/server/challenge/issue', {
+  const r = await fetch('https://verify.captcha.la/v1/server/challenge/issue', {
     method: 'POST',
     headers: {
       'X-App-Key': process.env.CAPTCHALA_APP_KEY,
@@ -275,19 +275,20 @@ app.get('/api/captcha-token', async (req, res) => {
 
 ```js
 // 你的后端
-const response = await fetch('https://api.captcha.la/v1/risk/consume', {
+const response = await fetch('https://verify.captcha.la/v1/validate', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'X-App-Key': 'your-app-key',
-    'X-App-Secret': 'your-app-secret'
+    'X-App-Key': process.env.CAPTCHALA_APP_KEY,
+    'X-App-Secret': process.env.CAPTCHALA_APP_SECRET
   },
-  body: JSON.stringify({ token })
+  // pass_token = result.token from onSuccess; client_ip is optional but recommended
+  body: JSON.stringify({ pass_token: token, client_ip: req.ip })
 })
 
 const result = await response.json()
-if (result.code === 0 && result.data.valid) {
-  // token 有效，放行后续业务
+if (result.code === 0 && result.data.valid === true) {
+  // 校验通过，继续处理业务请求
 }
 ```
 
@@ -313,5 +314,5 @@ MIT，详见 [LICENSE](./LICENSE)。
 ## 链接
 
 - [官网](https://captcha.la)
-- [文档](https://docs.captcha.la/zh-CN/sdk/web/react)
+- [文档](https://docs.captcha.la/zh-CN/sdk/react)
 - [Dashboard](https://dash.captcha.la)

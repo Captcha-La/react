@@ -1,6 +1,6 @@
 {
   "name": "@captcha-la/react",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Official Captchala CAPTCHA React component - Smart CAPTCHA protection for your React applications",
   "main": "dist/captchala-react.cjs.js",
   "module": "dist/captchala-react.esm.js",

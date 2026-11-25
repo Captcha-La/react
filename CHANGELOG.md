@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- README: server-side examples use the current endpoints (`https://verify.captcha.la/v1/validate`
+  with `pass_token`, and `/v1/server/challenge/issue` on the same host); fixed documentation links.
+  No code changes.
+
 ## 1.1.0
 
 - `onExpired` prop on `<Captchala>` and `useCaptchala({ onExpired })`: called once when the pass
