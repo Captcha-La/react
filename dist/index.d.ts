@@ -39,6 +39,13 @@ export declare interface CaptchalaProps {
     onError?: (error: any) => void;
     onClose?: () => void;
     onReady?: () => void;
+    /**
+     * Form field name. When set, a hidden `<input name={name}>` next to the widget holds the
+     * pass token after a success, and is emptied again on reset, expiry and error. A plain
+     * `<form>` submit or a Next.js Server Action then receives the token without any
+     * client code, e.g. `name="captchala_token"`. Omit it and nothing extra is rendered.
+     */
+    name?: string;
     className?: string;
     style?: default_2.CSSProperties;
 }

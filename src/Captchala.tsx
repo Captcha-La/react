@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react'
+import React, { useRef, useEffect, useImperativeHandle, forwardRef, useCallback, useState } from 'react'
 import { loadCaptchalaSDK } from './loader'
 
 export interface CaptchalaProps {
@@ -36,6 +36,13 @@ export interface CaptchalaProps {
   onError?: (error: any) => void
   onClose?: () => void
   onReady?: () => void
+  /**
+   * Form field name. When set, a hidden `<input name={name}>` next to the widget holds the
+   * pass token after a success, and is emptied again on reset, expiry and error. A plain
+   * `<form>` submit or a Next.js Server Action then receives the token without any
+   * client code, e.g. `name="captchala_token"`. Omit it and nothing extra is rendered.
+   */
+  name?: string
   className?: string
   style?: React.CSSProperties
 }
@@ -72,12 +79,15 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
     onError,
     onClose,
     onReady,
+    name,
     className,
     style
   } = props
 
   const containerRef = useRef<HTMLDivElement>(null)
   const captchaInstanceRef = useRef<any>(null)
+  // pass token mirrored into the hidden form field (only rendered when `name` is set)
+  const [fieldToken, setFieldToken] = useState('')
 
   // Store callbacks in refs to avoid dependency changes causing re-init
   const callbacksRef = useRef({ onSuccess, onExpired, onError, onClose, onReady, onServerTokenExpired })
@@ -93,6 +103,7 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
       if (!window.Captchala || !containerRef.current) return
 
       // Destroy existing instance
+      setFieldToken('')
       if (captchaInstanceRef.current) {
         captchaInstanceRef.current.destroy()
         captchaInstanceRef.current = null
@@ -110,7 +121,7 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
         lang,
         theme,
         serverToken,
-        // SDK 调用时委派到 props.onServerTokenExpired (通过 ref, 避免闭包陈旧)
+        // Delegates to props.onServerTokenExpired through a ref, so the closure never goes stale
         onServerTokenExpired: () =>
           callbacksRef.current.onServerTokenExpired?.() ?? null,
       })
@@ -118,11 +129,20 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
       // Use refs for callbacks to avoid stale closures
       instance
         .onReady(() => callbacksRef.current.onReady?.())
-        .onSuccess((result: CaptchalaResult) => callbacksRef.current.onSuccess?.(result))
-        .onError((err: Error) => callbacksRef.current.onError?.(err))
+        .onSuccess((result: CaptchalaResult) => {
+          setFieldToken(result?.token || '')
+          callbacksRef.current.onSuccess?.(result)
+        })
+        .onError((err: Error) => {
+          setFieldToken('')
+          callbacksRef.current.onError?.(err)
+        })
         .onClose(() => callbacksRef.current.onClose?.())
       if (hasOnExpired && typeof instance.onExpired === 'function') {
-        instance.onExpired(() => callbacksRef.current.onExpired?.())
+        instance.onExpired(() => {
+          setFieldToken('')
+          callbacksRef.current.onExpired?.()
+        })
       }
 
       if (product === 'bind' && bindToSelector) {
@@ -137,10 +157,10 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
       callbacksRef.current.onError?.(err)
     }
   }, [appKey, product, action, bindToSelector, serverToken, hasOnExpired])
-  // 注意: lang 故意不在 deps 里. lang 改动走下面的 setLang 原地切, 不拆实例 (避免吞掉
-  // 打开的 voice overlay 或者 popup). initCaptcha 内部读取 lang 是首次挂载用.
+  // Note: lang is deliberately not a dependency. A lang change goes through setLang below without
+  // destroying the instance (which would drop an open voice overlay or popup); initCaptcha reads lang on first mount.
 
-  // lang 变化: 不重挂, 原地调 setLang (voice overlay 会拉新语种音频 + 自动播放)
+  // lang change: no re-mount, call setLang in place (the voice overlay loads the new language's audio and autoplays)
   useEffect(() => {
     if (captchaInstanceRef.current?.setLang) {
       captchaInstanceRef.current.setLang(lang)
@@ -150,7 +170,10 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
   // Expose methods via ref
   useImperativeHandle(ref, () => ({
     verify: () => captchaInstanceRef.current?.verify(),
-    reset: () => captchaInstanceRef.current?.reset(),
+    reset: () => {
+      setFieldToken('')
+      captchaInstanceRef.current?.reset()
+    },
     destroy: () => captchaInstanceRef.current?.destroy(),
     bindTo: (selector: string | HTMLElement) => captchaInstanceRef.current?.bindTo(selector),
     setLang: (l: string) => captchaInstanceRef.current?.setLang?.(l),
@@ -173,12 +196,19 @@ const Captchala = forwardRef<CaptchalaRef, CaptchalaProps>((props, ref) => {
     ? { minHeight: 0, position: 'absolute', width: 0, height: 0, overflow: 'hidden', ...style }
     : { minHeight: 50, ...style }
 
-  return (
+  const box = (
     <div
       ref={containerRef}
       className={className}
       style={bindStyle}
     />
+  )
+  if (!name) return box
+  return (
+    <>
+      {box}
+      <input type="hidden" name={name} value={fieldToken} />
+    </>
   )
 })
 

@@ -93,6 +93,7 @@ function LoginForm() {
 | `onError` | `(error) => void` | - | 验证失败回调 |
 | `onClose` | `() => void` | - | 关闭回调 |
 | `onReady` | `() => void` | - | 就绪回调 |
+| `name` | `string` | - | 表单字段名。设置后组件旁会渲染同名隐藏 input，验证通过后存放 pass token（重置、过期、出错时清空），普通表单提交或 Next.js Server Action 直接就能拿到。见 [Next.js](#nextjs) |
 | `className` | `string` | - | 容器 class |
 | `style` | `CSSProperties` | - | 容器 inline style |
 
@@ -291,6 +292,60 @@ if (result.code === 0 && result.data.valid === true) {
   // 校验通过，继续处理业务请求
 }
 ```
+
+## Next.js
+
+App Router 和 Pages Router 都能用。组件和 Hook 已标记 `'use client'`，可以直接写在 Server Component 页面里。
+
+Server Component 不能传 `onSuccess` 这类回调，改用 `name`：token 会写进隐藏表单字段，Server Action 从表单数据里取出后在服务端校验，下面用的是 [`@captcha-la/node`](https://www.npmjs.com/package/@captcha-la/node)：
+
+```tsx
+// app/signup/page.tsx（Server Component）
+import { Captchala } from '@captcha-la/react'
+import { signup } from './actions'
+
+export default function Page() {
+  return (
+    <form action={signup}>
+      <input name="email" type="email" required />
+      <Captchala
+        appKey={process.env.NEXT_PUBLIC_CAPTCHALA_APP_KEY!}
+        product="embed"
+        action="signup"
+        name="captchala_token"
+      />
+      <button type="submit">注册</button>
+    </form>
+  )
+}
+```
+
+```ts
+// app/signup/actions.ts
+'use server'
+import { headers } from 'next/headers'
+import { CaptchaLaClient } from '@captcha-la/node'
+
+const captchala = new CaptchaLaClient() // 读取 CAPTCHALA_APP_KEY / CAPTCHALA_APP_SECRET
+
+export async function signup(formData: FormData) {
+  const token = String(formData.get('captchala_token') ?? '')
+  const clientIp = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim()
+  const result = await captchala.validate(token, { clientIp, expectedAction: 'signup' })
+  if (!result.valid) {
+    // 拒绝：原因见 result.error
+    return
+  }
+  // 创建账号
+}
+```
+
+- **Server token：** Server Component 渲染时就能签发，直接传给组件：
+  `const issue = await captchala.issueServerToken('signup', { ttl: 300 })`，然后
+  `serverToken={issue.token ?? undefined}`。
+- **回调**（`onSuccess`、`ref.verify()`、`useCaptchala`）需要 Client Component：和普通 React 项目一样，放在以 `'use client'` 开头的文件里。
+- **Pages Router：** 按普通 React 用法使用组件，在 API route 里校验。
+- 完整的 App Router 示例（使用公开测试密钥）见 [`examples/nextjs`](https://github.com/Captcha-La/react/tree/main/examples/nextjs)。
 
 ## TypeScript 支持
 

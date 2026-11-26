@@ -93,6 +93,7 @@ function LoginForm() {
 | `onError` | `(error) => void` | - | Error callback |
 | `onClose` | `() => void` | - | Close callback |
 | `onReady` | `() => void` | - | Ready callback |
+| `name` | `string` | - | Form field name. When set, a hidden input with this name holds the pass token (emptied on reset, expiry and error), so a plain form submit or a Next.js Server Action receives it. See [Next.js](#nextjs) |
 | `className` | `string` | - | Container class name |
 | `style` | `CSSProperties` | - | Container inline styles |
 
@@ -297,6 +298,65 @@ if (result.code === 0 && result.data.valid === true) {
   // Token is valid, proceed with the request
 }
 ```
+
+## Next.js
+
+The package works with the App Router and the Pages Router. Its components and hooks are marked
+`'use client'`, so you can render `<Captchala>` directly in a Server Component page.
+
+Server Components cannot pass callbacks such as `onSuccess`. Set `name` instead: the token goes into
+a hidden form field, and a Server Action reads it from the form data and validates it on the server,
+here with [`@captcha-la/node`](https://www.npmjs.com/package/@captcha-la/node):
+
+```tsx
+// app/signup/page.tsx (Server Component)
+import { Captchala } from '@captcha-la/react'
+import { signup } from './actions'
+
+export default function Page() {
+  return (
+    <form action={signup}>
+      <input name="email" type="email" required />
+      <Captchala
+        appKey={process.env.NEXT_PUBLIC_CAPTCHALA_APP_KEY!}
+        product="embed"
+        action="signup"
+        name="captchala_token"
+      />
+      <button type="submit">Create account</button>
+    </form>
+  )
+}
+```
+
+```ts
+// app/signup/actions.ts
+'use server'
+import { headers } from 'next/headers'
+import { CaptchaLaClient } from '@captcha-la/node'
+
+const captchala = new CaptchaLaClient() // CAPTCHALA_APP_KEY / CAPTCHALA_APP_SECRET
+
+export async function signup(formData: FormData) {
+  const token = String(formData.get('captchala_token') ?? '')
+  const clientIp = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim()
+  const result = await captchala.validate(token, { clientIp, expectedAction: 'signup' })
+  if (!result.valid) {
+    // reject: result.error says why
+    return
+  }
+  // create the account
+}
+```
+
+- **Server token:** a Server Component can issue it while rendering and pass it straight to the widget:
+  `const issue = await captchala.issueServerToken('signup', { ttl: 300 })`, then
+  `serverToken={issue.token ?? undefined}`.
+- **Callbacks** (`onSuccess`, `ref.verify()`, `useCaptchala`) need a Client Component: put them in a
+  file that starts with `'use client'`, as in any React app.
+- **Pages Router:** use the component as in any React app and validate in an API route.
+- A complete App Router example, using the public test keys, is in
+  [`examples/nextjs`](https://github.com/Captcha-La/react/tree/main/examples/nextjs).
 
 ## TypeScript Support
 

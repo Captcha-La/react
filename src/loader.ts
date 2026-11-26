@@ -1,9 +1,9 @@
 /**
  * Captchala SDK Loader
- * 支持多服务器 fallback 的 SDK 加载器
+ * SDK loader with fallback across several CDN servers
  */
 
-// CDN 服务器列表（按优先级排序）
+// CDN servers, in priority order
 const STATIC_SERVERS = [
   'cdn.captcha-cdn.net',
   'cdn.captchala.com'
@@ -32,7 +32,7 @@ declare global {
 }
 
 /**
- * 从服务器列表中加载脚本（带 fallback）
+ * Load the script from the server list (with fallback)
  */
 function loadScriptWithFallback(
   servers: string[],
@@ -94,7 +94,7 @@ function loadScriptWithFallback(
 }
 
 /**
- * 加载 CSS（从第一个服务器，CSS 失败不影响功能）
+ * Load the CSS (from the first server; a CSS failure does not break anything)
  */
 function loadCss(servers: string[], path: string): void {
   const url = `https://${servers[0]}${path}`

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0
+
+- Next.js App Router: the build is marked `'use client'`, so `<Captchala>` can be rendered directly
+  in a Server Component page (before, that failed with "useRef is not a function").
+- New `name` prop: a hidden form field with that name holds the pass token after a success, and is
+  emptied on reset, expiry and error. A plain form submit or a Server Action receives the token
+  without client code.
+- README: Next.js section; `examples/nextjs` (App Router, Server Action, server token, test keys).
+- No change for existing code: without `name` the component renders exactly as before.
+
 ## 1.1.1
 
 - README: server-side examples use the current endpoints (`https://verify.captcha.la/v1/validate`

@@ -84,8 +84,8 @@ export function useCaptchala(options: UseCaptchalaOptions): UseCaptchalaReturn {
           })
           .onError((err: any) => {
             pendingRef.current = false
-            // SDK 上报的 err 可能是字符串(handleError permanent 分支)或 Error/对象(其他路径).
-            // 统一包装成带 message + 原始数据的 Error, 业务方 .catch 里能 err.message 拿到文案.
+            // The SDK reports err as a string (permanent errors) or as an Error/object (other paths).
+            // Wrap it in an Error with message + the original data, so callers can read err.message in .catch.
             let normalized: Error
             if (err instanceof Error) {
               normalized = err
@@ -125,9 +125,9 @@ export function useCaptchala(options: UseCaptchalaOptions): UseCaptchalaReturn {
       }
     }
   }, [options.appKey, options.product, options.action, hasOnExpired])
-  // 注意: lang 不触发重挂 —— 见下方独立 effect 用 setLang 原地切
+  // Note: lang does not re-mount; the separate effect below switches it in place with setLang
 
-  // lang 改动: 原地切, 保留 voice overlay / popup 状态, 同时触发 overlay 的重拉+自动播放
+  // lang change: switch in place, keeping the voice overlay / popup state (the overlay reloads its audio and autoplays)
   useEffect(() => {
     if (options.lang && instanceRef.current?.setLang) {
       instanceRef.current.setLang(options.lang)
@@ -150,8 +150,8 @@ export function useCaptchala(options: UseCaptchalaOptions): UseCaptchalaReturn {
       pendingRef.current = true
       resolveRef.current = resolve
       rejectRef.current = reject
-      // 防御: verify 若同步抛 (例如 API 缺方法), 务必清 pending 并 reject,
-      // 否则后续 verify 永远被 "already in progress" 拦住
+      // Defensive: if verify throws synchronously (e.g. a missing API method), clear pending and reject,
+      // otherwise every later verify is blocked by "already in progress"
       try {
         instanceRef.current.verify()
       } catch (e: any) {

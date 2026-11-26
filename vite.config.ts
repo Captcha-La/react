@@ -21,6 +21,9 @@ export default defineConfig({
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime'],
       output: {
+        // Next.js App Router: the components and hooks run on the client, so they can be
+        // imported straight from a Server Component page.
+        banner: "'use client';",
         exports: 'named',
         globals: {
           react: 'React',
