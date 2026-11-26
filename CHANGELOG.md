@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- README in Japanese, Korean, Spanish, Portuguese (BR) and German, with a language switcher in every README. No code changes.
+
 ## 1.2.0
 
 - Next.js App Router: the build is marked `'use client'`, so `<Captchala>` can be rendered directly
